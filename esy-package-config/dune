@@ -1,5 +1,6 @@
 (library
   (name EsyPackageConfig)
+  (public_name esy.EsyPackageConfig)
   (inline_tests)
   (flags (:standard (-w -39) "-open" "EsyLib"))
   (libraries

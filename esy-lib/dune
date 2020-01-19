@@ -1,5 +1,6 @@
 (library
   (name EsyLib)
+  (public_name esy.EsyLib)
   (flags (:standard (-w -39)))
   (inline_tests)
   (libraries
