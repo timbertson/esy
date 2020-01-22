@@ -3,14 +3,14 @@
 self:
 let
     lib = self.lib;
-    opam-commit = "602caec337d152a48a4c23a90ccfdc069b63f8ec";
+    opam-commit = "13e7f4c54874b4f2c17e256fc96e70f7078111ff";
     pkgs = self.pkgs;
     repo = (pkgs.fetchFromGitHub) 
     {
       owner = "ocaml";
       repo = "opam-repository";
       rev = opam-commit;
-      sha256 = "1ic8wvcxj766z5qskssnhi0zwx0sf2brxrk2wrhh10wgg1a2szh8";
+      sha256 = "0xk5hywybjsb6ackag313cn9i2a5lhw6pd7sffkkr03xc0xqnlxf";
     };
     repoPath = self.repoPath;
     selection = self.selection;
@@ -1735,6 +1735,35 @@ in
         url = "http://erratique.ch/software/topkg/releases/topkg-1.0.1.tbz";
       };
       version = "1.0.1";
+    };
+    utop = 
+    {
+      opamInputs = 
+      {
+        base-threads = selection.base-threads;
+        base-unix = selection.base-unix;
+        camomile = selection.camomile;
+        cppo = selection.cppo;
+        dune = selection.dune;
+        lambda-term = selection.lambda-term;
+        lwt = selection.lwt;
+        lwt_react = selection.lwt_react;
+        ocaml = selection.ocaml;
+        ocamlfind = selection.ocamlfind;
+        react = selection.react;
+      };
+      opamSrc = repoPath repo 
+      {
+        hash = "sha256:0xf9syvwg2mnb7lafghl19dkbydrgqak4xvkrpgaw2ng7nzqmhm2";
+        package = "packages/utop/utop.2.4.3";
+      };
+      pname = "utop";
+      src = pkgs.fetchurl 
+      {
+        sha256 = "107al0l3x4a5kkjka7glmhsqlm7pwzzc6shspiv5gsjb49pblc2f";
+        url = "https://github.com/ocaml-community/utop/releases/download/2.4.3/utop-2.4.3.tbz";
+      };
+      version = "2.4.3";
     };
     variantslib = 
     {

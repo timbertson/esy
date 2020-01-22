@@ -18,10 +18,13 @@ let
 		};
 	};
 	opam-selection = opam2nix.build args;
-	resolve = opam2nix.resolve args [ ../esy.opam ];
+	resolve = opam2nix.resolve args [ ../esy.opam "utop" ];
 in
 {
 	inherit (opam-selection) esy;
 	inherit resolve;
 	selection = opam-selection;
+	shell = opam-selection.esy.overrideAttrs (o: {
+		buildInputs = (o.buildInputs or []) ++ [opam-selection.utop];
+	});
 }
