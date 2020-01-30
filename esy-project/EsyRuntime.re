@@ -1,3 +1,5 @@
+open EsyLib;
+
 let currentWorkingDir = Path.v(Sys.getcwd());
 let currentExecutable = Path.v(Sys.executable_name);
 

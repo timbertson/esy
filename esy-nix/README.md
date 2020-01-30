@@ -23,6 +23,16 @@ Caches:
 - during building, need to set --store-path?
   - if we generate build plans that don't rely on the store, we might not actually need to care?
 
+# loading the lock
+
+SolutionLock
+ - Sandbox
+   - SandboxSpec
+     - ofPath (esy.json?)
+
+
+ - Project.make
+
 # esy Build process
 
 esy is (mostly) compatible with opam deps, it's just not packaged for opam. So we can use opam2nix for the deps, and dune for the build.

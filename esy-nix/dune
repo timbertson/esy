@@ -1,25 +1,29 @@
-(library
-  (name EsyNix)
+(executable
+  (name main)
+  ; (public_name esy2nix)
+  ; (package esy)
   (flags (:standard (-w -39)))
-  (inline_tests)
   (libraries
-            angstrom
-            lwt
-            lwt.unix
-            cmdliner
-            yojson
-            bos
-            logs
-            logs.fmt
-            logs.lwt
-            logs.cli
-            re
-            fmt
-            fmt.cli
-            fmt.tty
-            ppx_deriving_yojson.runtime
-            str
-            astring
+            EsyInstall
+            EsyLib
+            EsyProject
+            ; angstrom
+            ; lwt
+            ; lwt.unix
+            ; cmdliner
+            ; yojson
+            ; bos
+            ; logs
+            ; logs.fmt
+            ; logs.lwt
+            ; logs.cli
+            ; re
+            ; fmt
+            ; fmt.cli
+            ; fmt.tty
+            ; ppx_deriving_yojson.runtime
+            ; str
+            ; astring
             )
   (preprocess (
                pps

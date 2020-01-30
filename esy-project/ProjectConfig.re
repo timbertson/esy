@@ -1,3 +1,4 @@
+open EsyLib;
 open EsyBuild;
 open Cmdliner;
 

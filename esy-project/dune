@@ -1,0 +1,35 @@
+(library
+  (name EsyProject)
+  ; (public_name esy.EsyProject)
+  (flags (:standard (-w -39) "-open" "EsyLib"))
+  (inline_tests)
+  (libraries
+            lwt
+            lwt.unix
+            cmdliner
+            logs
+            logs.fmt
+            logs.lwt
+            logs.cli
+            fmt
+            fmt.cli
+            fmt.tty
+            str
+            astring
+            ppx_deriving_yojson.runtime
+            EsyLib
+            EsyBuild
+            EsyInstall
+            EsySolve
+            )
+  (preprocess (
+               pps
+               lwt_ppx
+               ppx_let
+               ppx_deriving_yojson
+               ppx_deriving.std
+               ppx_expect
+               ppx_inline_test
+               ppx_sexp_conv
+               ))
+  )

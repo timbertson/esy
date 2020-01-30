@@ -1,3 +1,4 @@
+open EsyLib;
 open EsyPackageConfig;
 open EsyInstall;
 open EsyBuild;
