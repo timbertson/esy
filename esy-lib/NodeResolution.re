@@ -74,7 +74,7 @@ let rec realpath = (p: Fpath.t) => {
           target |> Fpath.append(Fpath.parent(p)) |> Fpath.normalize,
         );
       } else {
-        let parent = p |> Fpath.parent |> Fpath.rem_empty_seg;
+        let parent = p |> Fpath.parent |> Fpath.normalize |> Fpath.rem_empty_seg;
         let%bind parent = realpath(parent);
         Ok(parent / Fpath.basename(p));
       };
