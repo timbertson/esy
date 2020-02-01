@@ -82,7 +82,7 @@ module PackageOverride = {
     );
 };
 
-let writeOverride = (sandbox, pkg, override) =>
+let writeOverride = (sandbox:Sandbox.t, pkg, path, override) => {
   RunAsync.Syntax.(
     switch (override) {
     | Override.OfJson({json}) => return(OfJson({json: json}))
@@ -97,7 +97,7 @@ let writeOverride = (sandbox, pkg, override) =>
 
       let lockPath =
         Path.(
-          SandboxSpec.solutionLockPath(sandbox.Sandbox.spec)
+          path
           / "overrides"
           / Path.safeSeg(id)
         );
@@ -115,7 +115,7 @@ let writeOverride = (sandbox, pkg, override) =>
       let digest = Digestv.ofString(Dist.show(dist));
       let lockPath =
         Path.(
-          SandboxSpec.solutionLockPath(sandbox.Sandbox.spec)
+          path
           / "overrides"
           / Digestv.toHex(digest)
         );
@@ -157,8 +157,8 @@ let readOverride = (sandbox, override) =>
     }
   );
 
-let writeOverrides = (sandbox, pkg, overrides) =>
-  RunAsync.List.mapAndJoin(~f=writeOverride(sandbox, pkg), overrides);
+let writeOverrides = (sandbox, pkg, overrides, path) =>
+  RunAsync.List.mapAndJoin(~f=writeOverride(sandbox, pkg, path), overrides);
 
 let readOverrides = (sandbox, overrides) =>
   RunAsync.List.mapAndJoin(~f=readOverride(sandbox), overrides);
@@ -193,7 +193,7 @@ let readOpam = (sandbox, opam: PackageSource.opam) => {
   return({...opam, path: opampath});
 };
 
-let writePackage = (sandbox, pkg: Package.t) => {
+let writePackage = (sandbox, pkg: Package.t, path: Path.t) => {
   open RunAsync.Syntax;
   let%bind source =
     switch (pkg.source) {
@@ -206,7 +206,7 @@ let writePackage = (sandbox, pkg: Package.t) => {
       return(PackageSource.Install({source, opam: Some(opam)}));
     };
 
-  let%bind overrides = writeOverrides(sandbox, pkg, pkg.overrides);
+  let%bind overrides = writeOverrides(sandbox, pkg, pkg.overrides, path);
   return({
     id: pkg.id,
     name: pkg.name,
@@ -254,12 +254,12 @@ let solutionOfLock = (sandbox, root, node) => {
   PackageId.Map.fold(f, node, return(Solution.empty(root)));
 };
 
-let lockOfSolution = (sandbox, solution: Solution.t) => {
+let lockOfSolution = (sandbox, solution: Solution.t, path: Path.t) => {
   open RunAsync.Syntax;
   let%bind node = {
     let f = (pkg, _dependencies, nodes) => {
       let%bind nodes = nodes;
-      let%bind node = writePackage(sandbox, pkg);
+      let%bind node = writePackage(sandbox, pkg, path);
       return(PackageId.Map.add(pkg.Package.id, node, nodes));
     };
 
