@@ -23,15 +23,14 @@ Caches:
 - during building, need to set --store-path?
   - if we generate build plans that don't rely on the store, we might not actually need to care?
 
-# loading the lock
+# lock to nix:
 
-SolutionLock
- - Sandbox
-   - SandboxSpec
-     - ofPath (esy.json?)
+- TODO: bug where solutionLock.toPath would write files (overrides specifically) into the sandbox lock pack, instead of the dest.
+- TODO: looks like overrides are written into lock, yet opam files simply reference the sandbox path?
 
+ - ocaml files: need to get the upstream repo? lock path has references inside sandbox
+ - sources: duh...
 
- - Project.make
 
 # esy Build process
 

@@ -101,15 +101,19 @@ let writeOverride = (sandbox:Sandbox.t, pkg, path, override) => {
           / "overrides"
           / Path.safeSeg(id)
         );
+      let%bind () = Lwt.map(Run.return, Logs_lwt.debug(m => m("writeOverride copy %s -> %s", Path.show(info.path), Path.show(lockPath))));
       let%bind () = Fs.copyPath(~src=info.path, ~dst=lockPath);
+      let%bind () = Lwt.map(Run.return, Logs_lwt.debug(m => m("(done)")));
       let path =
         DistPath.ofPath(
-          Path.tryRelativize(~root=sandbox.spec.path, lockPath),
+          Path.tryRelativize(~root=path, lockPath),
         );
       return(OfOpamOverride({path: path}));
     | Override.OfDist({dist: Dist.LocalPath(local), json: _}) =>
       return(OfPath(local))
     | Override.OfDist({dist, json: _}) =>
+      /* let%bind () = Logs_lwt.debug(m => m("writeOverride ofDist")) |> Lwt.map Run.v; */
+      let%bind () = Lwt.map(Run.return, Logs_lwt.debug(m => m("writeOverride ofDist")));
       let%bind distPath =
         DistStorage.fetchIntoCache(sandbox.cfg, sandbox.spec, dist);
       let digest = Digestv.ofString(Dist.show(dist));
@@ -128,6 +132,7 @@ let writeOverride = (sandbox:Sandbox.t, pkg, path, override) => {
       return(OfPath({path, manifest}));
     }
   );
+}
 
 let readOverride = (sandbox, override) =>
   RunAsync.Syntax.(
@@ -178,8 +183,10 @@ let writeOpam = (sandbox, opam: PackageSource.opam) => {
   };
 
   if (Path.isPrefix(sandboxPath, opampath)) {
+    let%bind () = Lwt.map(Run.return, Logs_lwt.debug(m => m("writeOpam: %s is in sandbox", Path.show(opampath))));
     return(opam);
   } else {
+    let%bind () = Lwt.map(Run.return, Logs_lwt.debug(m => m("writeOpam: copying %s -> %s", Path.show(opam.path), Path.show(dst))));
     let%bind () = Fs.copyPath(~src=opam.path, ~dst);
     let path = Path.tryRelativize(~root=sandboxPath, dst);
     return({...opam, path});
@@ -198,10 +205,13 @@ let writePackage = (sandbox, pkg: Package.t, path: Path.t) => {
   let%bind source =
     switch (pkg.source) {
     | Link({path, manifest, kind}) =>
+      let%bind () = Lwt.map(Run.return, Logs_lwt.debug(m => m("writePackage: link")));
       return(PackageSource.Link({path, manifest, kind}))
     | Install({source, opam: None}) =>
+      let%bind () = Lwt.map(Run.return, Logs_lwt.debug(m => m("writePackage: install (no opam)")));
       return(PackageSource.Install({source, opam: None}))
     | Install({source, opam: Some(opam)}) =>
+      let%bind () = Lwt.map(Run.return, Logs_lwt.debug(m => m("writePackage: install (with opam)")));
       let%bind opam = writeOpam(sandbox, opam);
       return(PackageSource.Install({source, opam: Some(opam)}));
     };
@@ -276,28 +286,38 @@ let ofPath = (~digest=?, sandbox: Sandbox.t, path: Path.t) =>
         let%lwt () =
           Logs_lwt.debug(m => m("SolutionLock.ofPath %a", Path.pp, path));
         if%bind (Fs.exists(path)) {
+          let%lwt () =
+            Logs_lwt.debug(m => m("path exists: %a", Path.pp, path));
           let%lwt lock = {
             let%bind json = Fs.readJsonFile(Path.(path / indexFilename));
             RunAsync.ofRun(Json.parseJsonWith(of_yojson, json));
           };
+          let%lwt () =
+            Logs_lwt.debug(m => m("path loaded into JSON: %a", Path.pp, path));
 
           switch (lock) {
           | Ok(lock) =>
             switch (digest) {
             | None =>
+              let () = Logs.debug(m => m("no digest"));
               let%bind solution =
                 solutionOfLock(sandbox, lock.root, lock.node);
               return(Some(solution));
             | Some(digest) =>
-              if (String.compare(lock.digest, Digestv.toHex(digest)) == 0) {
+              let () = Logs.debug(m => m("some digest: %s, lock digest = %s", Digestv.toHex(digest), lock.digest));
+            // hacky!
+              /* if (String.compare(lock.digest, Digestv.toHex(digest)) == 0) { */
                 let%bind solution =
                   solutionOfLock(sandbox, lock.root, lock.node);
+                let () = Logs.debug(m => m("solution!"));
                 return(Some(solution));
-              } else {
-                return(None);
-              }
+              /* } else { */
+              /*   let () = Logs.debug(m => m("digest was missing thing")); */
+              /*   return(None); */
+              /* } */
             }
           | Error(err) =>
+            let () = Logs.debug(m => m("was an error"));
             let path =
               Option.orDefault(
                 ~default=path,
@@ -326,14 +346,22 @@ let toPath = (~digest, sandbox, solution: Solution.t, path: Path.t) => {
   open RunAsync.Syntax;
   let%lwt () =
     Logs_lwt.debug(m => m("SolutionLock.toPath %a", Path.pp, path));
+  let%lwt () =
+    Logs_lwt.debug(m => m("SolutionLock.toPath: removing %a", Path.pp, path));
   let%bind () = Fs.rmPath(path);
-  let%bind (root, node) = lockOfSolution(sandbox, solution);
+  let%lwt () = Logs_lwt.debug(m => m("SolutionLock.toPath: removed %a", Path.pp, path));
+  let%bind (root, node) = lockOfSolution(sandbox, solution, path);
+  let%lwt () = Logs_lwt.debug(m => m("SolutionLock.toPath: made lock %a", Path.pp, path));
   let lock = {digest: Digestv.toHex(digest), node, root: root.Package.id};
+  let%lwt () = Logs_lwt.debug(m => m("SolutionLock.toPath: mkdir %a", Path.pp, path));
   let%bind () = Fs.createDir(path);
+  let%lwt () = Logs_lwt.debug(m => m("SolutionLock.toPath: write JSON %a", Path.pp, path));
   let%bind () =
     Fs.writeJsonFile(~json=to_yojson(lock), Path.(path / indexFilename));
+  let%lwt () = Logs_lwt.debug(m => m("SolutionLock.toPath: mkdir %a", Path.pp, path));
   let%bind () =
     Fs.writeFile(~data=gitAttributesContents, Path.(path / ".gitattributes"));
+  let%lwt () = Logs_lwt.debug(m => m("SolutionLock.toPath: mkdir %a", Path.pp, path));
   let%bind () =
     Fs.writeFile(~data=gitIgnoreContents, Path.(path / ".gitignore"));
   return();

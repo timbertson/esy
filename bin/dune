@@ -1,7 +1,7 @@
 (executable
   (name esy)
   (preprocess (pps lwt_ppx ppx_let ppx_deriving_yojson ppx_deriving.std))
-  (flags (:standard (-w -39) "-open" "EsyLib"))
+  (flags (:standard (-w -39) "-open" "EsyLib" "-open" "EsyProject"))
   (libraries
             lwt
             lwt.unix
@@ -19,6 +19,7 @@
             EsyBuild
             EsyInstall
             EsySolve
+            EsyProject
             )
   )
 

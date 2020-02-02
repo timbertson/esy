@@ -1028,7 +1028,7 @@ let getSandboxSolution =
   return(solution);
 };
 
-let solve = (force, dumpCudfInput, dumpCudfOutput, proj: Project.t) => {
+let solve = (force, dumpCudfInput, dumpCudfOutput, proj: Project.t) : Solution.t => {
   open RunAsync.Syntax;
   let run = () => {
     let%bind _: Solution.t =

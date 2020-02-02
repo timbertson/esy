@@ -2,7 +2,7 @@
   (name EsyInstall)
   (public_name esy.EsyInstall)
   (inline_tests)
-  (flags (:standard (-w -39) "-open" "EsyLib"))
+  (flags (:standard (-w -39-32-27) "-open" "EsyLib"))
   (libraries
             EsyLib
             EsyPackageConfig
