@@ -71,11 +71,18 @@ let () =
 	|> RunAsync.runExn ?err:None
 	in
 
+	Logs.info(fun m->m "solving ...");
 	let solution = match solution with
 		| Some s -> s
 		| None -> getSandboxSolution project.workflow.solvespec project
 			|> RunAsync.runExn ?err:None
 	in
+
+	Logs.info(fun m->m "configuring ...");
+	let _configured = Project.configured project
+		|> RunAsync.runExn ?err:None
+	in
+
 	let outPath = Path.v "/tmp/esy.lock" in
 	print_endline "writing lock";
 	(* NOTE: solutionLock.toPath (writeOverride) assumes it's writing to the sandbox lock path, which is presumably a bug.

@@ -1,3 +1,3 @@
 #!bash -eu
 cd ../
-nix-shell -A resolve
+nix-shell -A resolve default.nix
